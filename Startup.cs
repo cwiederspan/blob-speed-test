@@ -3,18 +3,18 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Diagnostics;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+
+using Azure.Storage.Blobs;
 
 namespace MyWeb {
 
@@ -59,6 +59,12 @@ namespace MyWeb {
 
             app.UseRouting();
 
+            // Parse out the locations from the configuration files
+            var locations = this.Configuration.GetSection("Storage").GetChildren().Select(value => new {
+                Name = value["Location"],
+                Connection = value["Connection"]
+            }).ToList();
+
             app.UseEndpoints(endpoints => {
 
                 endpoints.MapGet("/", async context => {
@@ -66,12 +72,34 @@ namespace MyWeb {
                     await context.Response.WriteAsync("Hello World!");
                 });
 
+                endpoints.MapGet("/download", async context => {
+
+                    var filesFlag = context.Request.Query["files"].SingleOrDefault() ?? "small,medium";
+                    var files = filesFlag.ToLower().Split(",").ToList();
+
+                    var results = new List<Result>();
+
+                    foreach (var location in locations) {
+
+                        foreach (var file in files) {
+
+                            var filename = $"{file}.dat";
+
+                            var duration = await this.DownloadBlobAsync(location.Connection, filename);
+
+                            results.Add(new Result {
+                                Filename = filename,
+                                Location = location.Name,
+                                Duration = duration
+                            });
+                        }
+                    }
+
+                    await context.Response.WriteAsJsonAsync(results);
+                });
+
                 endpoints.MapPost("/upload", async context => {
 
-                    var locations = this.Configuration.GetSection("Storage").GetChildren().Select(value => new {
-                        Name = value["Location"],
-                        Connection = value["Connection"]
-                    }).ToList();
 
                     var results = new List<Result>();
 
@@ -94,6 +122,23 @@ namespace MyWeb {
                     await context.Response.WriteAsJsonAsync(results);
                 });
             });
+        }
+
+        private async Task<long> DownloadBlobAsync(string connectionString, string filename) {
+
+            // Start the timer
+            var stopwatch = Stopwatch.StartNew();
+
+            // Upload the blob
+            var blobClient = new BlobClient(connectionString, "speedtest", filename);
+            var blob = await blobClient.DownloadAsync();
+
+            // Stop the timer
+            stopwatch.Stop();
+
+            var duration = stopwatch.ElapsedMilliseconds;
+
+            return duration;
         }
 
         private async Task<long> UploadBlobAsync(string connectionString, IFormFile file, string filename) {

@@ -17,3 +17,14 @@ az storage account create \
 --allow-blob-public-access false
 
 ```
+
+## Sample File Creation
+
+```cmd
+
+fsutil file createnew small.dat 4000000
+fsutil file createnew medium.dat 40000000
+fsutil file createnew large.dat 400000000
+fsutil file createnew xlarge.dat 4000000000
+
+```
