@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>MyWeb</RootNamespace>
+    <UserSecretsId>353dba02-065d-4ab5-aeb9-5e1ea61dbf5e</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.8.3" />
+  </ItemGroup>
+
+</Project>
