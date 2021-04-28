@@ -68,10 +68,10 @@ namespace MyWeb {
             app.UseEndpoints(endpoints => {
 
                 endpoints.MapGet("/", async context => {
-                    
                     await context.Response.WriteAsync("Hello World!");
                 });
 
+                // Setup a route for a GET to test the read/download performance
                 endpoints.MapGet("/download", async context => {
 
                     var filesFlag = context.Request.Query["files"].SingleOrDefault() ?? "small,medium";
@@ -98,8 +98,8 @@ namespace MyWeb {
                     await context.Response.WriteAsJsonAsync(results);
                 });
 
+                // Setup a route for a POST to test the upload performance
                 endpoints.MapPost("/upload", async context => {
-
 
                     var results = new List<Result>();
 
@@ -125,7 +125,6 @@ namespace MyWeb {
         }
 
         private async Task<long> DownloadBlobAsync(string connectionString, string filename) {
-
 
             // Upload the blob
             var blobClient = new BlobClient(connectionString, "speedtest", filename);
