@@ -1,4 +1,8 @@
+# Speed Testing Application
 
+This application can be used to test the performance of Azure blob reads and writes
+from an Azure web app in any region, to one or more storage accounts in different 
+regions.
 
 ## Blob Storage Setup
 
@@ -15,6 +19,23 @@ az storage account create \
 --access-tier Hot \
 --https-only true \
 --allow-blob-public-access false
+
+```
+
+## App Service Setup
+
+```bash
+
+LOCATION=westus2
+
+az webapp up \
+--name cdw-blobspeedtesting-$LOCATION \
+--resource-group cdw-blobspeedtesting-20210427 \
+--plan cdw-blobspeedtesting-$LOCATION-plan \
+--location $LOCATION \
+--runtime "DOTNET|5.0" \
+--sku P1V3 \
+--os-type Linux
 
 ```
 
