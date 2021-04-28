@@ -126,12 +126,14 @@ namespace MyWeb {
 
         private async Task<long> DownloadBlobAsync(string connectionString, string filename) {
 
-            // Start the timer
-            var stopwatch = Stopwatch.StartNew();
 
             // Upload the blob
             var blobClient = new BlobClient(connectionString, "speedtest", filename);
-            var blob = await blobClient.DownloadAsync();
+
+            // Start the timer
+            var stopwatch = Stopwatch.StartNew();
+
+            await blobClient.DownloadToAsync(Stream.Null);
 
             // Stop the timer
             stopwatch.Stop();
@@ -143,13 +145,14 @@ namespace MyWeb {
 
         private async Task<long> UploadBlobAsync(string connectionString, IFormFile file, string filename) {
 
+            // Create the pointer to the blob file
+            var blobClient = new BlobClient(connectionString, "speedtest", filename);
+
             // Start the timer
             var stopwatch = Stopwatch.StartNew();
 
             // Upload the blob
             using (var stream = file.OpenReadStream()) {
-
-                var blobClient = new BlobClient(connectionString, "speedtest", filename);
                 var uploadResult = await blobClient.UploadAsync(stream);
             }
 
